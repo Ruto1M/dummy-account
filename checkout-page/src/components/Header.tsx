@@ -1,6 +1,6 @@
 // src/components/Header.tsx
 import React, { useState } from "react";
-import { useAuth } from "../context/AuthHooks";
+import { useAuth } from "../context/authHooks";
 
 const Header: React.FC = () => {
   const { user, logout } = useAuth();
@@ -37,7 +37,7 @@ const Header: React.FC = () => {
       ) : (
         <a
           href="#auth"
-          className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+          className="px-4 py-2 bg-[#3182CE] text-white rounded hover:bg-[#3182CE]"
         >
           Sign In
         </a>
