@@ -5,6 +5,7 @@ import ProductColumn from "./ProductColumn";
 import ShippingColumn from "./ShippingColumn";
 import PaymentColumn from "./PaymentColumn";
 import AuthForm from "./AuthForm";
+import logo from "../src/assets/images/dummy.svg";
 
 
 const App: React.FC = () => {
@@ -24,7 +25,7 @@ const App: React.FC = () => {
       <header className="flex items-center justify-between px-8 py-[35px] border-b border-gray-300  bg-white text-gray-800 shadow-md">
         <div className="flex items-center gap-[202px]">
           <div className="text-2xl font-bold cursor-pointer">
-          <img src="./src/assets/images/dummy.svg" alt="Logo" />
+          <img src={logo} alt="Logo" />
         </div>
 
         <nav>
