@@ -1,7 +1,7 @@
 // Shipping data structure
 export interface ShippingInfo {
   address: string;
-  city: string;
+  // city: string;
   postalCode: string;
   country: string;
   method?: "standard" | "express";
@@ -33,7 +33,7 @@ export type CheckoutAction =
 export const initialCheckoutState: CheckoutState = {
   step: "account",
   authMode: "login",
-  shipping: { address: "", city: "", postalCode: "", country: "", method: undefined, cost: undefined },
+  shipping: { address: "", postalCode: "", country: "", method: undefined, cost: undefined },
   payment: { method: null, cardNumber: "", expiry: "" },
 };
 
