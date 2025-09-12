@@ -38,7 +38,7 @@ const App: React.FC = () => {
         <div className="flex items-center gap-4 text-base">
           {isSignedIn ? (
             <div className="group relative cursor-pointer">
-              <button className="px-4 py-2 bg-gray-100 rounded hover:bg-gray-200">
+              <button className="px-4 py-2 bg-white rounded hover:bg-gray-200">
                 Account ▾
               </button>
               <div className="absolute right-0 mt-2 w-40 bg-white border rounded shadow-lg opacity-0 invisible group-hover:visible group-hover:opacity-100 transition-all">
