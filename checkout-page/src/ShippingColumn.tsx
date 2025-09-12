@@ -1,6 +1,6 @@
 // src/ShippingColumn.tsx
 import React, { useState } from "react";
-import { useCheckout } from "./context/CheckoutContext";
+import { useCheckout } from "./context/useCheckout";
 
 interface ShippingColumnProps {
   onNext: () => void;

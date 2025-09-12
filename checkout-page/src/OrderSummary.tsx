@@ -1,5 +1,5 @@
 import React from "react";
-import { useCheckout } from "./context/CheckoutContext";
+import { useCheckout } from "./context/useCheckout";
 
 const OrderSummary: React.FC = () => {
   const { state } = useCheckout();

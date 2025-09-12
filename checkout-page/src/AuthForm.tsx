@@ -1,114 +1,83 @@
 import React, { useState } from "react";
-import { useCheckout } from "./context/CheckoutContext";
+import { useAuth } from "./context/AuthContext";
+import { useCheckout } from "./context/useCheckout";
+import { loginUser, registerUser } from "./api/authApi";
 
 interface AuthFormProps {
   mode: "login" | "register";
-  setMode?: (mode: "login" | "register") => void; // optional, to allow switching
+  setMode: (mode: "login" | "register") => void;
 }
 
 const AuthForm: React.FC<AuthFormProps> = ({ mode, setMode }) => {
+  const { setUser } = useAuth();
   const { dispatch } = useCheckout();
-  const isRegister = mode === "register";
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (isRegister) {
+    if (mode === "register") {
       if (password !== confirmPassword) {
         alert("Passwords do not match");
         return;
       }
-      localStorage.setItem("user", JSON.stringify({ email, password, name: email.split("@")[0] }));
-      alert("Account created successfully!");
+      await registerUser(email, password, dispatch, setUser);
     } else {
-      const storedUser = localStorage.getItem("user");
-      if (storedUser) {
-        const user = JSON.parse(storedUser);
-        if (user.email !== email || user.password !== password) {
-          alert("Invalid credentials");
-          return;
-        }
-      } else {
-        alert("No account found, please register");
-        return;
-      }
-      alert("Login successful!");
+      await loginUser(email, password, dispatch, setUser);
     }
-
-    dispatch({ type: "SET_STEP", payload: "shipping" });
   };
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4 max-w-md mx-auto">
-      <h2 className="text-xl font-semibold mb-4">{isRegister ? "Register" : "Sign In"}</h2>
+      <h2 className="text-xl font-semibold mb-4">
+        {mode === "register" ? "Register" : "Sign In"}
+      </h2>
 
-      <div>
-        <label className="block mb-2 font-medium">Email</label>
-        <input
-          type="email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          className="w-full border rounded px-3 py-2"
-          required
-        />
-      </div>
-
-      <div>
-        <label className="block mb-2 font-medium">Password</label>
+      <input
+        type="email"
+        placeholder="Email"
+        value={email}
+        onChange={(e) => setEmail(e.target.value)}
+        required
+        className="w-full border rounded px-3 py-2"
+      />
+      <input
+        type="password"
+        placeholder="Password"
+        value={password}
+        onChange={(e) => setPassword(e.target.value)}
+        required
+        className="w-full border rounded px-3 py-2"
+      />
+      {mode === "register" && (
         <input
           type="password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          className="w-full border rounded px-3 py-2"
+          placeholder="Confirm Password"
+          value={confirmPassword}
+          onChange={(e) => setConfirmPassword(e.target.value)}
           required
+          className="w-full border rounded px-3 py-2"
         />
-      </div>
-
-      {isRegister && (
-        <div>
-          <label className="block mb-2 font-medium">Confirm Password</label>
-          <input
-            type="password"
-            value={confirmPassword}
-            onChange={(e) => setConfirmPassword(e.target.value)}
-            className="w-full border rounded px-3 py-2"
-            required
-          />
-        </div>
       )}
 
-      {/* ✅ Two buttons side by side */}
-      {!isRegister && setMode && (
-        <div className="flex justify-end gap-4 mt-4">
-          <button
-            type="button"
-            onClick={() => setMode("register")}
-            className="px-6 py-3 text-black bg-transparent font-semibold rounded hover:bg-gray-200 transition"
-          >
-            Register for Account
-          </button>
-          <button
-            type="submit"
-            className="px-6 py-3 bg-[#3182CE] text-white font-semibold rounded hover:bg-blue-700 transition"
-          >
-            Login
-          </button>
-        </div>
-      )}
-
-      {/* Registration submit button */}
-      {isRegister && (
+      <div className="flex justify-end gap-4">
+        <button
+          type="button"
+          onClick={() => setMode(mode === "login" ? "register" : "login")}
+          className="px-6 py-3 text-black bg-transparent font-semibold rounded hover:bg-gray-200"
+        >
+          {mode === "login" ? "Register for Account" : "Back to Login"}
+        </button>
         <button
           type="submit"
-          className="px-6 py-3 bg-green-600 text-white rounded hover:bg-green-700 w-full mt-4"
+          className="px-6 py-3 bg-[#3182CE] text-white font-semibold rounded hover:bg-blue-700"
         >
-          Register
+          {mode === "login" ? "Login" : "Register"}
         </button>
-      )}
+      </div>
     </form>
   );
 };
