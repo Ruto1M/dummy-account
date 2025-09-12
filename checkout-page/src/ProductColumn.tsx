@@ -7,11 +7,7 @@ const ProductColumn: React.FC = () => {
 
       <div className="flex flex-col items-center gap-4 border-b border-gray-300 pb-6 mb-6 w-full">
         {/* Product Image */}
-        <img
-          src="./assets/images/headphones.jpg"
-          alt="Product"
-          className="w-[421px] h-[162px] object-cover rounded-lg"
-        />
+       <img src="../src/assets/images/headphones.jpg" alt="Product" className="w-full h-auto rounded" />
 
         {/* Name + Counter Row */}
         <div className="flex justify-between items-center w-full">
