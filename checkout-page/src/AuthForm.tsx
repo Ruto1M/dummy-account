@@ -29,9 +29,9 @@ const AuthForm: React.FC<AuthFormProps> = ({ mode, setMode }) => {
         alert("Passwords do not match");
         return;
       }
-      await registerUser(email, password, dispatch, setUser);
+      await registerUser(email, dispatch, setUser);
     } else {
-      await loginUser(email, password, dispatch, setUser);
+      await loginUser(email, dispatch, setUser);
     }
   };
 

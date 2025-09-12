@@ -5,7 +5,7 @@ import type { CheckoutAction } from "../context/checkoutReducer";
 // Register user
 export const registerUser = async (
   email: string,
-  password: string,
+  // password: string,
   dispatch: Dispatch<CheckoutAction>,
   setUser: (user: User) => void
 ) => {
@@ -30,7 +30,7 @@ export const registerUser = async (
 // Login user
 export const loginUser = async (
   email: string,
-  password: string,
+  // password: string,
   dispatch: Dispatch<CheckoutAction>,
   setUser: (user: User) => void
 ) => {
