@@ -1,38 +1,32 @@
 # Checkout
 
-A server-authoritative checkout built with **React + TypeScript**, **Express**, and **PostgreSQL**. The original browser-only demo UI is preserved, but prices, quotes, tax, inventory, orders, payment state, identity, and receipts are all owned by the server.
+Server-authoritative checkout: **React + TypeScript** UI, **Express** API, **PostgreSQL** storage. The original demo UI is preserved; pricing, quotes, tax, inventory, orders, payments, identity, and receipts are server-owned.
 
 > [!WARNING]
-> This repository is configured for **local test checkout only**. It uses `PAYMENT_PROVIDER=test`, `liveCheckoutEnabled: false`, and draft policies. No live or sandbox payment adapter is registered, and this project makes no legal or PCI compliance certification claims.
+> Local/test mode only: `PAYMENT_PROVIDER=test`, `liveCheckoutEnabled: false`, draft policies. No live/sandbox provider adapter and no legal/PCI certification.
 
 ## Screenshots
 
-All screenshots below are from the local test provider. Card fields are disabled placeholders; no raw card data is collected or stored.
-
 | Shipping | Review |
 | --- | --- |
-| [![Shipping details](docs/screenshots/01-shipping.png)](docs/screenshots/01-shipping.png) | [![Order review and consent](docs/screenshots/02-review.png)](docs/screenshots/02-review.png) |
+| [![Shipping](docs/screenshots/01-shipping.png)](docs/screenshots/01-shipping.png) | [![Review](docs/screenshots/02-review.png)](docs/screenshots/02-review.png) |
 
 | Hosted test payment | Paid confirmation |
 | --- | --- |
-| [![Hosted test payment page](docs/screenshots/03-test-payment.png)](docs/screenshots/03-test-payment.png) | [![Paid order confirmation and receipt](docs/screenshots/04-confirmation.png)](docs/screenshots/04-confirmation.png) |
+| [![Test payment](docs/screenshots/03-test-payment.png)](docs/screenshots/03-test-payment.png) | [![Confirmation](docs/screenshots/04-confirmation.png)](docs/screenshots/04-confirmation.png) |
 
-## What is included
+## Layout
 
-- Guest and registered checkout with server-side sessions, scrypt password hashing, HttpOnly SameSite cookies, CSRF protection, generic login errors, throttling, recovery, and guest-cart merge.
-- Integer minor-unit pricing with short-lived, versioned quotes; configurable tax, currency, jurisdiction, shipping, promotion, and legal policies.
-- Stock reservations, idempotent order/payment/refund operations, transactions, and unique constraints.
-- Provider-neutral payment interface with a local signed-webhook test adapter, replay/dedupe handling, monotonic status transitions, refunds, and a reconciliation CLI.
-- Compliance gates, draft policy pages, privacy request/export/anonymize endpoints, redacted structured logs, and counters.
-
-## Requirements
-
-- Node.js 22+
-- npm
-- Docker for PostgreSQL
-- Free local ports: `5173` (web), `3001` (API), `55432` (PostgreSQL)
+```text
+checkout-page/  React UI, typed API clients, form/a11y tests
+server/         Express API, PostgreSQL modules, security, webhooks, reconciliation
+shared/         Zod contracts and DTOs
+docs/           Integration, API, database, security, launch, and deployment guides
+```
 
 ## Quick start
+
+Requirements: Node 22+, npm, Docker, ports `5173`, `3001`, `55432` free.
 
 ```bash
 docker run --name checkout-pg \
@@ -49,76 +43,85 @@ npm run db:seed
 npm run dev
 ```
 
-Open <http://localhost:5173/>. The Vite dev server proxies `/api` to the API on port `3001`.
+Open <http://localhost:5173/>. Vite proxies `/api` to the API on port `3001`.
 
-To stop:
+Stop with `Ctrl+C`, then:
 
 ```bash
-# Press Ctrl+C in the terminal running npm run dev
 docker stop checkout-pg
 docker rm checkout-pg
 ```
 
-## Using the checkout
+## Use the checkout
 
-1. **Start a session.** Choose **Continue as guest**, or register/sign in. Registering or signing in after a guest cart exists merges the guest cart into the account.
-2. **Enter shipping details.** Country selection reloads destination-specific shipping rates. The featured item is `SONY-WH-1000`; try promo code `SAVE10`.
-3. **Review the order.** Prices are recalculated by the server. Necessary consent starts unchecked; optional marketing is never preselected. Draft policy links are available in the review panel.
-4. **Choose a payment method.** Select **Credit card** or **PayPal**. The displayed card fields are hosted-provider placeholders; this application never accepts a PAN, expiry, or CVC.
-5. **Use the hosted test page.** Choose **Pay (test)**, **Decline**, or **Cancel**. Each outcome goes through the same signed event pipeline as a real webhook.
-6. **Wait for server confirmation.** Success is shown only after the server reports a paid order. Pending payments are polled; the URL alone never implies success.
-7. **Exercise support flows.** Paid orders can be refunded through the documented API, then viewed again to see the refunded receipt state. Run `npm run reconcile` to process stale provider sessions and expired reservations.
+1. Continue as guest or register/sign in. Guest carts merge on sign-in.
+2. Fill shipping; country changes reload supported shipping methods.
+3. Review server-calculated totals and accept necessary consent. Try `SAVE10`.
+4. Choose card or PayPal. Card fields are hosted placeholders; no PAN is accepted.
+5. On the hosted test page choose **Pay (test)**, **Decline**, or **Cancel**.
+6. Confirmation appears only after server verification. Pending orders are polled.
+7. Refunds and reconciliation can be exercised through the API/CLI.
 
-## Useful commands
+## Commands
 
 | Command | Purpose |
 | --- | --- |
-| `npm run dev` | Start API and Vite dev server |
 | `npm run typecheck` | Type-check all workspaces |
 | `npm run lint` | Lint all workspaces |
-| `npm run test` | Run 18 server integration tests and 8 React/a11y tests |
-| `npm run build` | Build shared, server, and web bundles |
-| `npm run docs:check` | Verify required documentation exists |
-| `npm run reconcile` | Reconcile stale test-provider payments and stock |
+| `npm run test` | 18 server integration tests + 8 React/a11y tests |
+| `npm run build` | Build shared, server, and web |
+| `npm run docs:check` | Verify required docs |
+| `npm run reconcile` | Reconcile stale test payments and stock |
+| `npm run dev` | Run API and Vite locally |
 
-The integration tests reset the local test database between cases. Never point them at a shared or production database.
+Integration tests reset the local test database. Never run them against shared data.
 
-## Configuration
+## Best practices
 
-Copy `.env.example` to `.env` for local development. All example values are non-secret test values. Required configuration is validated at startup; the app exits clearly if something required is missing or inconsistent.
+### Money and pricing
 
-For a deployed environment:
+- Price on the server only.
+- Store money as integer minor units.
+- Use short-lived, versioned quotes bound to cart, address, and shipping method.
+- Revalidate quotes inside a transaction before order creation.
+- Keep tax, currency, jurisdiction, and promotion rules configurable.
 
-- Inject real secrets from the deployment platform; never commit them.
-- Set `COOKIE_SECURE=true` and serve over HTTPS behind a same-origin proxy.
-- Replace placeholder merchant/legal details.
-- Register a real provider adapter. The repository intentionally ships only the test adapter.
-- Complete and review every launch gate before enabling live checkout.
+### Security
 
-## Publishing to GitHub
+- Hash passwords server-side with scrypt.
+- Use HttpOnly `SameSite=Lax` session cookies; `Secure` in production.
+- Enforce CSRF double-submit tokens and origin checks.
+- Return generic login errors and throttle failures.
+- Scope idempotency keys to customer and operation.
+- Return `404` for other customers' resources.
+- Keep raw card data out of React, the server, logs, URLs, and the database.
+- Verify webhook signatures, timestamp tolerance, event IDs, and status ordering.
+- Redact logs; never log request bodies, passwords, tokens, or PANs.
 
-For a step-by-step guide to push this project to <https://github.com/Ruto1M/dummy-account>, including secret checks, conflict recovery, and deployment notes, see [docs/GITHUB.md](docs/GITHUB.md).
+### Operations
 
-## Architecture at a glance
+- Inject secrets from the environment; commit only `.env.example`.
+- Fail startup on missing or inconsistent configuration.
+- Use transactions, unique constraints, and stock reservations.
+- Run `npm run reconcile` for stale sessions and expired reservations.
+- Keep providers behind interfaces; add an adapter only after provider selection.
+- Treat legal/tax/privacy gates as release blockers, not UI copy.
 
-```text
-checkout-page/   React UI, typed API clients, form/a11y tests
-server/          Express API, PostgreSQL modules, security, webhooks, reconciliation
-shared/          Zod contracts and DTOs shared by browser and server
-docs/            Integration, API, database, request-flow, compliance, and launch docs
-scripts/         Documentation check
-```
+### Before live checkout
 
-Detailed references:
+- Register a reviewed payment provider adapter.
+- Replace placeholder merchant and policy details.
+- Use HTTPS, same-origin deployment, `COOKIE_SECURE=true`, and managed PostgreSQL.
+- Complete every gate in [LAUNCH_CHECKLIST.md](docs/LAUNCH_CHECKLIST.md).
+- Do not describe the app as legally compliant or certified.
 
-- [Integration map](docs/INTEGRATION_MAP.md)
+## Deployment
+
+- [Push to GitHub](docs/GITHUB.md)
+- [Deploy to Vercel](docs/VERCEL.md)
+- [Architecture and boundaries](docs/INTEGRATION_MAP.md)
 - [API contract](docs/OPENAPI.md)
-- [Database schema and migrations](docs/DATABASE.md)
+- [Database schema](docs/DATABASE.md)
 - [Request flows](docs/REQUEST_FLOW.md)
 - [Compliance gates](docs/COMPLIANCE.md)
 - [PCI scope](docs/PCI_SCOPE.md)
-- [Launch checklist](docs/LAUNCH_CHECKLIST.md)
-
-## Safety notes
-
-Do not add raw PAN, expiry, CVC, provider secrets, webhook secrets, passwords, or card data to code, forms, URLs, logs, or the database. The test provider uses disabled fields and a fixed test last-four value only for receipt display.
