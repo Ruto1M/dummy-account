@@ -1,0 +1,34 @@
+{
+  "name": "dummy-account-production-checkout",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "workspaces": [
+    "shared",
+    "server",
+    "checkout-page"
+  ],
+  "scripts": {
+    "predev": "npm run build -w @checkout/shared",
+    "dev": "concurrently -k -n api,web -c cyan,magenta \"npm run dev -w @checkout/server\" \"npm run dev -w @checkout/web\"",
+    "prebuild": "npm run build -w @checkout/shared",
+    "build": "npm run build -w @checkout/server && npm run build -w @checkout/web",
+    "lint": "npm run lint --workspaces --if-present",
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "test": "npm run build -w @checkout/shared && npm run test -w @checkout/server && npm run test -w @checkout/web",
+    "db:migrate": "npm run db:migrate -w @checkout/server",
+    "db:seed": "npm run db:seed -w @checkout/server",
+    "reconcile": "npm run reconcile -w @checkout/server",
+    "docs:check": "node scripts/check-docs.mjs"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "concurrently": "^10.0.7",
+    "eslint": "^10.15.0",
+    "globals": "^17.14.0",
+    "typescript-eslint": "^8.74.0"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}
