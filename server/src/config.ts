@@ -25,6 +25,8 @@ function requireSecret(name: string, minimumLength = 32): string {
 
 const nodeEnv = read("NODE_ENV") ?? "development";
 const providerMode = (read("PAYMENT_PROVIDER") ?? "test") as ProviderMode;
+const requestedPoolMax = Number(read("DB_POOL_MAX") ?? "10");
+const dbPoolMax = Number.isFinite(requestedPoolMax) ? Math.max(1, Math.floor(requestedPoolMax)) : 10;
 
 export const config = {
   nodeEnv,
@@ -32,6 +34,7 @@ export const config = {
   isProduction: nodeEnv === "production",
   port: Number(read("PORT") ?? "3001"),
   databaseUrl: requireSecret("DATABASE_URL", 8),
+  dbPoolMax,
   sessionSecret: requireSecret("SESSION_SECRET"),
   csrfSecret: requireSecret("CSRF_SECRET"),
   paymentWebhookSecret: requireSecret("PAYMENT_WEBHOOK_SECRET"),

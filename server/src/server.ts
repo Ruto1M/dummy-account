@@ -1,12 +1,17 @@
+import { pathToFileURL } from "node:url";
 import { createApp } from "./app.js";
 import { config } from "./config.js";
 import { closeDatabase } from "./db.js";
 import { logger } from "./logger.js";
 import { runMigrations } from "./migrations/run.js";
 
+// Shared by the local listener and the Vercel serverless entrypoint. Creating
+// the app does not open a listening socket, so it is safe to import.
+export const app = createApp();
+export default app;
+
 async function main(): Promise<void> {
   await runMigrations();
-  const app = createApp();
   const server = app.listen(config.port, () => {
     logger.info({
       port: config.port,
@@ -22,7 +27,13 @@ async function main(): Promise<void> {
   process.on("SIGTERM", () => shutdown("SIGTERM"));
 }
 
-main().catch((error: unknown) => {
-  logger.error({ err: error instanceof Error ? error.message : String(error) }, "startup failed");
-  process.exit(1);
-});
+const isDirectRun = process.argv[1]
+  ? import.meta.url === pathToFileURL(process.argv[1]).href
+  : false;
+
+if (isDirectRun) {
+  main().catch((error: unknown) => {
+    logger.error({ err: error instanceof Error ? error.message : String(error) }, "startup failed");
+    process.exit(1);
+  });
+}

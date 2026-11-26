@@ -185,4 +185,4 @@ npm run db:seed
 node server/dist/server.js
 ```
 
-The built API serves the compiled React app, so one web service plus PostgreSQL is enough for a test deployment. Live checkout still requires a real provider adapter, reviewed legal/tax/privacy settings, and every launch gate in [LAUNCH_CHECKLIST.md](LAUNCH_CHECKLIST.md) to be satisfied.
+The built API serves the compiled React app, so one web service plus PostgreSQL is enough for a test deployment. For a Vercel-specific walkthrough, see [VERCEL.md](VERCEL.md). Live checkout still requires a real provider adapter, reviewed legal/tax/privacy settings, and every launch gate in [LAUNCH_CHECKLIST.md](LAUNCH_CHECKLIST.md) to be satisfied.
